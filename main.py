@@ -61,12 +61,13 @@ def aplicar_mascara_geologica_simple(mapa):
     return np.clip(mapa_modificado, 0, 1)
 
 # Parámetros
-SIZE = 33
+TAMANO = 7
+SIZE = 2 ** TAMANO + 1
 MAPA = generar_mapa_fractal(SIZE, 0.5)
 MAPA = aplicar_mascara_geologica_simple(MAPA)
 N_POZOS = 10
 POBLACION = 50
-GENERACIONES = 60
+GENERACIONES = 100
 PROB_CROSSOVER = 0.75
 PROB_MUTACION = 0.05
 

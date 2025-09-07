@@ -11,7 +11,7 @@ def generar_gif(num_generaciones, carpeta_imgs, nombre_salida, duracion=500):
     - duracion: segundos por frame (float)
     """
     # Lista de archivos en orden
-    imagenes = [os.path.join(carpeta_imgs, f"generacion_{i}.png") for i in range(num_generaciones)]
+    imagenes = [os.path.join(carpeta_imgs, f"gif/generacion_{i}.png") for i in range(num_generaciones)]
 
     # Filtrar solo las que existen (por si falta alguna)
     imagenes = [img for img in imagenes if os.path.exists(img)]

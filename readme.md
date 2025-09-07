@@ -54,7 +54,8 @@ Define la **función generadora** del mapa de calor:
 - `"random"` → Valores aleatorios uniformes.
 -  `"blobs"` → Manchas gaussianas aleatorias.
 - `"distancia"` → Inverso de la distancia a un punto central:
-$$ h(x, y) = \frac{1}{1 + \sqrt{(x - x_c)^2 + (y - y_c)^2}} $$
+  
+$$h(x, y) = \frac{1}{1 + \sqrt{(x - x_c)^2 + (y - y_c)^2}}$$
 
 
 
@@ -64,8 +65,10 @@ $$ h(x, y) = \frac{1}{1 + \sqrt{(x - x_c)^2 + (y - y_c)^2}} $$
 METODO = "cercano"  # "cercano" o "secuencial"
 ```
 Estrategia para elegir la pareja de cruce:
-  - `"cercano"` → Se elige el individuo más próximo en distancia euclidiana:
-$$ d(p_1, p_2) = \sqrt{(x_1 - x_2)^2 + (y_1 - y_2)^2} $$
+  - `"cercano"` → Se elige el individuo más próximo:
+    
+$$d(p_1, p_2) = \sqrt{(x_1 - x_2)^2 + (y_1 - y_2)^2}$$
+
   - `"secuencial"` → Se empareja con el siguiente en la lista (circular).
 
 

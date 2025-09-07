@@ -69,12 +69,16 @@ def distancia(p1, p2):
     """Distancia euclidiana entre dos puntos."""
     return math.hypot(p1[0] - p2[0], p1[1] - p2[1])
 
-import random
-import math
-
-def distancia(p1, p2):
-    """Distancia euclidiana entre dos puntos."""
-    return math.hypot(p1[0] - p2[0], p1[1] - p2[1])
+def seleccionar_poblacion(candidatos, puntos, elitismo=0, aleatorio=True):
+    candidatos_ordenados = sorted(candidatos, key=lambda x: x[1], reverse=True)
+    mejores = candidatos_ordenados[:elitismo] if elitismo > 0 else []
+    resto = candidatos_ordenados[elitismo:]
+    if aleatorio:
+        pesos = [max(f, 0.0001) for _, f in resto]
+        seleccionados_resto = random.choices(resto, weights=pesos, k=puntos - len(mejores))
+    else:
+        seleccionados_resto = resto[:puntos - len(mejores)]
+    return mejores + seleccionados_resto
 
 def cruce_interno_centro(
     coords, size,
@@ -148,8 +152,23 @@ def cruce_interno_centro(
             xm = (punto1[0] + punto2[0]) / 2
             ym = (punto1[1] + punto2[1]) / 2
         elif tipo_centro == "masa":
-            xm = (punto1[0] * fit1 + punto2[0] * fit2) / (fit1 + fit2)
-            ym = (punto1[1] * fit1 + punto2[1] * fit2) / (fit1 + fit2)
+            # … después de seleccionar punto1, punto2 y obtener fit1, fit2 …
+            # --- Cálculo robusto del centro de masa ---
+            den = fit1 + fit2
+            if abs(den) < 1e-8:
+                # Si la suma de fitness es (casi) cero, usamos promedio geométrico
+                xm = (punto1[0] + punto2[0]) / 2
+                ym = (punto1[1] + punto2[1]) / 2
+            else:
+                # Centro de masa ponderado por fitness
+                xm = (punto1[0] * fit1 + punto2[0] * fit2) / den
+                ym = (punto1[1] * fit1 + punto2[1] * fit2) / den
+
+            # Luego ajustas a la grilla como antes
+            xi = max(0, min(size - 1, int(round(xm))))
+            yi = max(0, min(size - 1, int(round(ym))))
+            punto_final = (xi, yi)
+
         else:
             raise ValueError("Tipo de centro no reconocido")
 

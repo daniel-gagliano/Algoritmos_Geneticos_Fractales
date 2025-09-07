@@ -3,13 +3,11 @@
 
 Nuestro objetivo con este programa es construir un framework totalmente automatizado y reproducible para probar variantes de algoritmos genéticos sobre paisajes de fitness 2D. Paso a paso:
 
-    Defino cada escenario en un JSON (operadores de selección, tipo de cruce, penalizaciones, jitter, número de puntos y generaciones).
+1. Definimos cada escenario en un JSON (operadores de selección, tipo de cruce, penalizaciones, jitter, número de puntos y generaciones).
+2. El programa lee esa configuración, genera poblaciones iniciales (aleatorias o equidistantes), evalúa su fitness en un heatmap y aplica ciclos de selección-cruce-reemplazo.
+3. En cada generación guarda una imagen PNG con los puntos “seleccionados” y los “nuevos” sobre el heatmap, y al finalizar creamos un GIF que muestra la evolución completa.
 
-    El programa lee esa configuración, genera poblaciones iniciales (aleatorias o equidistantes), evalúa su fitness en un heatmap y aplica ciclos de selección-cruce-reemplazo.
-
-    En cada generación guardo una imagen PNG con los puntos “seleccionados” y los “nuevos” sobre el heatmap, y al finalizar creo un GIF que muestra la evolución completa.
-
-De esta forma puedo lanzar en paralelo varios experimentos con diferentes parámetros, comparar visualmente la convergencia y la diversidad, y entender qué combinaciones de operadores funcionan mejor en distintos tipos de terrenos de fitness.
+De esta forma podemos lanzar en paralelo varios experimentos con diferentes parámetros, comparar visualmente la convergencia y la diversidad, y entender qué combinaciones de operadores funcionan mejor en distintos tipos de terrenos de fitness.
 
 # Explicación de los parámetros utilizados
 

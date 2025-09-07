@@ -93,126 +93,113 @@ def cruce_interno_centro(
 ):
     """
     Genera nuevos puntos como el centro entre pares de puntos, con opción de jitter.
-    Integra combinación de puntos demasiado cercanos con penalización máxima.
-
-    - metodo: "cercano", "secuencial", "ruleta", "ruleta_dist"
-    - tipo_centro: "geometrico" o "masa"
-    - coords: puede ser [(punto, fitness), ...] o [(x, y), ...]
-    - fitness_fn: si coords no trae fitness, se calcula aquí
-    - jitter: desplazamiento aleatorio máximo en celdas (entero)
-    - peso_fitness: exponente para ponderar la importancia del fitness (ruleta)
-    - peso_distancia: exponente para ponderar la importancia de la distancia (ruleta_dist)
-    - dist_min: distancia mínima para combinación (usa la misma que penalización)
-    - penal_max: penalización máxima para combinación
+    Admite métodos cercanos, secuencial, ruleta y ruleta_dist, y centros geométrico o de masa.
     """
-    nuevos = []
-
-    # Asegurar que todos tengan fitness
+    # 1) Asegurar fitness en todos los individuos
     coords_con_fit = []
     for c in coords:
         if isinstance(c, tuple) and isinstance(c[0], tuple):
-            coords_con_fit.append(c)
+            pt, ft = c
+            ft = float(ft) if ft is not None else 0.0
         else:
-            coords_con_fit.append((c, fitness_fn(c) if fitness_fn else 1))
+            pt = c
+            ft = float(fitness_fn(pt)) if fitness_fn else 0.0
+        coords_con_fit.append((pt, ft))
 
-    for i, (punto1, fit1) in enumerate(coords_con_fit):
+    nuevos = []
+    n = len(coords_con_fit)
 
-        # Selección del compañero
+    # 2) Cruce principal
+    for i, (p1, f1) in enumerate(coords_con_fit):
+        # 2.1) Selección de pareja
         if metodo == "cercano":
-            candidato = min(
-                (p for j, p in enumerate(coords_con_fit) if j != i),
-                key=lambda p: distancia(punto1, p[0])
+            pareja = min(
+                (coords_con_fit[j] for j in range(n) if j != i),
+                key=lambda pf: distancia(p1, pf[0])
             )
-
         elif metodo == "secuencial":
-            candidato = coords_con_fit[(i + 1) % len(coords_con_fit)]
-
+            pareja = coords_con_fit[(i + 1) % n]
         elif metodo == "ruleta":
-            candidatos = [p for j, p in enumerate(coords_con_fit) if j != i]
-            pesos = [max(f, 0.0001) ** peso_fitness for _, f in candidatos]
-            candidato = random.choices(candidatos, weights=pesos, k=1)[0]
-
+            pool = [(p, f) for j,(p,f) in enumerate(coords_con_fit) if j != i]
+            pesos = [max(f,1e-6)**peso_fitness for _,f in pool]
+            pareja = random.choices(pool, weights=pesos, k=1)[0]
         elif metodo == "ruleta_dist":
-            candidatos = [p for j, p in enumerate(coords_con_fit) if j != i]
+            pool = [(p, f) for j,(p,f) in enumerate(coords_con_fit) if j != i]
             pesos = []
-            for punto_cand, fit_cand in candidatos:
-                dist = distancia(punto1, punto_cand)
-                factor_distancia = 1 / (1 + dist)  # favorece cercanos
-                peso = (max(fit_cand, 0.0001) ** peso_fitness) * (factor_distancia ** peso_distancia)
-                pesos.append(peso)
-            candidato = random.choices(candidatos, weights=pesos, k=1)[0]
-
+            for p2, f2 in pool:
+                d = distancia(p1, p2)
+                factor = (1.0/(1.0+d))**peso_distancia
+                pesos.append((max(f2,1e-6)**peso_fitness) * factor)
+            pareja = random.choices(pool, weights=pesos, k=1)[0]
         else:
-            raise ValueError("Método no reconocido")
+            raise ValueError(f"Método desconocido: {metodo}")
 
-        punto2, fit2 = candidato
+        p2, f2 = pareja
 
-        # Calcular centro
+        # 2.2) Cálculo de centro
         if tipo_centro == "geometrico":
-            xm = (punto1[0] + punto2[0]) / 2
-            ym = (punto1[1] + punto2[1]) / 2
+            xm = (p1[0] + p2[0]) / 2.0
+            ym = (p1[1] + p2[1]) / 2.0
         elif tipo_centro == "masa":
-            # … después de seleccionar punto1, punto2 y obtener fit1, fit2 …
-            # --- Cálculo robusto del centro de masa ---
-            den = fit1 + fit2
+            den = f1 + f2
             if abs(den) < 1e-8:
-                # Si la suma de fitness es (casi) cero, usamos promedio geométrico
-                xm = (punto1[0] + punto2[0]) / 2
-                ym = (punto1[1] + punto2[1]) / 2
+                # Caída al promedio geométrico
+                xm = (p1[0] + p2[0]) / 2.0
+                ym = (p1[1] + p2[1]) / 2.0
             else:
-                # Centro de masa ponderado por fitness
-                xm = (punto1[0] * fit1 + punto2[0] * fit2) / den
-                ym = (punto1[1] * fit1 + punto2[1] * fit2) / den
-
-            # Luego ajustas a la grilla como antes
-            xi = max(0, min(size - 1, int(round(xm))))
-            yi = max(0, min(size - 1, int(round(ym))))
-            punto_final = (xi, yi)
-
+                xm = (p1[0]*f1 + p2[0]*f2) / den
+                ym = (p1[1]*f1 + p2[1]*f2) / den
         else:
-            raise ValueError("Tipo de centro no reconocido")
+            raise ValueError(f"Tipo de centro desconocido: {tipo_centro}")
 
-        # Aplicar jitter
+        # 2.3) Aplicar jitter (solo una vez)
         if jitter > 0:
             xm += random.uniform(-jitter, jitter)
             ym += random.uniform(-jitter, jitter)
 
-        # Ajustar a la grilla
+        # 2.4) Asegurar coordenadas enteras y dentro de [0, size-1]
         xi = max(0, min(size - 1, int(round(xm))))
         yi = max(0, min(size - 1, int(round(ym))))
+        pt_final = (xi, yi)
+        ft_final = float(fitness_fn(pt_final)) if fitness_fn else None
 
-        punto_final = (xi, yi)
-        fit_final = fitness_fn(punto_final) if fitness_fn else None
+        if ft_final is not None:
+            nuevos.append((pt_final, ft_final))
+        else:
+            nuevos.append(pt_final)
 
-        nuevos.append((punto_final, fit_final) if fit_final is not None else punto_final)
-
-    # --- Combinación de puntos cercanos con penalización máxima ---
-    if dist_min is not None and penal_max is not None and fitness_fn is not None:
-        usados = set()
+    # 3) Fusión por penalización (opcional)
+    if dist_min is not None and penal_max is not None and fitness_fn:
         combinados = []
-        for i, (pi, fi) in enumerate(nuevos):
+        usados = set()
+        for i, (p1, f1) in enumerate(nuevos):
             if i in usados:
                 continue
-            combinado = False
-            for j, (pj, fj) in enumerate(nuevos):
+            merged = False
+            for j, (p2, f2) in enumerate(nuevos):
                 if j <= i or j in usados:
                     continue
-                dist = distancia(pi, pj)
-                penal = penal_max * max(0, 1 - dist / dist_min)
+                d = distancia(p1, p2)
+                penal = penal_max * max(0.0, 1.0 - d/dist_min)
                 if penal >= penal_max:
-                    # Fusionar en centro de masa
-                    xm = (pi[0] * fi + pj[0] * fj) / (fi + fj)
-                    ym = (pi[1] * fi + pj[1] * fj) / (fi + fj)
+                    # mismo cálculo de centro robusto
+                    den = f1 + f2
+                    if abs(den) < 1e-8:
+                        xm = (p1[0] + p2[0]) / 2.0
+                        ym = (p1[1] + p2[1]) / 2.0
+                    else:
+                        xm = (p1[0]*f1 + p2[0]*f2) / den
+                        ym = (p1[1]*f1 + p2[1]*f2) / den
+
                     xi = max(0, min(size - 1, int(round(xm))))
                     yi = max(0, min(size - 1, int(round(ym))))
-                    nuevo_punto = (xi, yi)
-                    nuevo_fit = fitness_fn(nuevo_punto)
-                    combinados.append((nuevo_punto, nuevo_fit))
+                    ft_new = float(fitness_fn((xi, yi)))
+                    combinados.append(((xi, yi), ft_new))
                     usados.update([i, j])
-                    combinado = True
+                    merged = True
                     break
-            if not combinado:
-                combinados.append((pi, fi))
+            if not merged:
+                combinados.append((p1, f1))
                 usados.add(i)
         nuevos = combinados
 

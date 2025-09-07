@@ -1,2 +1,3 @@
 resultados_generaciones.csv
 /main/img/*
+**/__pycache__/

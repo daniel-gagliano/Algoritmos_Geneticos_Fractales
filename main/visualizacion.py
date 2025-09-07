@@ -12,7 +12,6 @@ def mostrar_varios_conjuntos(
     dpi=300              # Resolución de guardado
 ):
     plt.figure(figsize=(6, 6))
-
     # Si hay mapa de calor, dibujarlo primero
     if heatmap is not None:
         heatmap = np.array(heatmap)
@@ -48,6 +47,5 @@ def mostrar_varios_conjuntos(
     # Guardar imagen si se especifica
     if guardar_como:
         plt.savefig(guardar_como, dpi=dpi, bbox_inches='tight')
-        print(f"Imagen guardada en: {guardar_como}")
 
-    plt.show()
+    plt.close()

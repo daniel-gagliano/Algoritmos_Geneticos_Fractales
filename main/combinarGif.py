@@ -77,7 +77,7 @@ def combinar_gifs_en_grilla(gif_paths, output_path, cols=None, duration=0.1, gap
         final_frames.append(np.vstack(grid_with_gap))
 
     # Escribir GIF final
-    with imageio.get_writer(output_path, mode='I', duration=duration) as writer:
+    with imageio.get_writer(output_path, mode='I', duration=duration,loop=0) as writer:
         for frame in final_frames:
             writer.append_data(frame)
 
@@ -108,7 +108,7 @@ if __name__ == "__main__":
             gif_paths=gif_paths,
             output_path=output_path,
             cols=None,      # None → se fija a 4 columnas por fila
-            duration=0.12,
+            duration=400,
             gap=5
         )
 

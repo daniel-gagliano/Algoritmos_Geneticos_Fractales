@@ -1,0 +1,17 @@
+[   
+    {
+        "nombre": "perlin_fina_perlin",
+        "metodo": "ruleta",
+        "tipo_centro": "masa",
+        "elitismo": 10,
+        "aleatorio": false,
+        "modo":"random",
+        "puntos": 100,
+        "generaciones": 20,
+        "jitter": 5,
+        "porcentaje_seleccion": 100,
+        "num_seleccionados": 60,
+        "distancia_min": 2,
+        "penalizacion_max": 0.4
+    }
+]

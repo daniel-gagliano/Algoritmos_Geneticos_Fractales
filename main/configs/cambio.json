@@ -1,0 +1,33 @@
+    [{
+        "nombre": "distancia_centro_distancia_suave", 
+        "metodo": "cercano",
+        "tipo_centro": "masa",
+        "elitismo": 10,
+        "aleatorio": false,
+        "modo":"equidistantes", 
+        "puntos": 100,
+        "generaciones": 20,
+        "jitter": 5,
+        "porcentaje_seleccion": 100,
+        "num_seleccionados": 60,
+        "distancia_min": 2,
+        "penalizacion_max": 0.6
+    },
+    {
+        "nombre": "distancia_centro_distancia_suave", 
+        "metodo": "ruleta_dist",
+        "tipo_centro": "masa",
+        "elitismo": 10,
+        "aleatorio": false,
+        "modo":"equidistantes", 
+        "puntos": 100,
+        "generaciones": 20,
+        "jitter": 5,
+        "porcentaje_seleccion": 100,
+        "num_seleccionados": 60,
+        "distancia_min": 2,
+        "penalizacion_max": 0.6
+    }
+
+
+]
